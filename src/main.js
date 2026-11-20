@@ -13,7 +13,7 @@ import { AcousticSynth } from './audio.js';
 import { buildGlyphMask, tokenizeTextForPlate, paintMaskBrush } from './glyphs.js';
 import { AcousticPuzzleGame, GAME_LEVELS } from './game.js';
 import { getHelpTip, renderGuideMarkup } from './guide.js';
-import { mountAssemblyManualAnimator } from './assembly-manual.js';
+import { HowToBuild3DController } from './how-to-build-3d.js';
 import { TRANSLATIONS } from './i18n.js';
 
 // Core engines
@@ -47,13 +47,16 @@ function callWorker(type, payload) {
 // DOM references
 const appRoot = document.getElementById('appRoot');
 const stageView = document.getElementById('stageView');
+const buildView = document.getElementById('buildView');
 const guideView = document.getElementById('guideView');
 const labToggleWrap = document.getElementById('labToggleWrap');
 const langSwitch = document.getElementById('langSwitch');
 
 const btnModeStudio = document.getElementById('btnModeStudio');
 const btnModeGame = document.getElementById('btnModeGame');
+const btnModeBuild = document.getElementById('btnModeBuild');
 const btnModeGuide = document.getElementById('btnModeGuide');
+let build3dCtrl = null;
 const studioCard = document.getElementById('studioCard');
 const drawCard = document.getElementById('drawCard');
 const gameCard = document.getElementById('gameCard');
@@ -286,9 +289,14 @@ function setLanguage(nextLang) {
   if (lastBenchmarkRows.length > 0 && !benchmarkRunning) {
     renderBenchmarkResults(lastBenchmarkHw);
   }
+  if (build3dCtrl) {
+    build3dCtrl.setLanguage(lang);
+  }
 
   if (appMode === 'guide') {
     renderGuidePage();
+  } else if (appMode === 'build') {
+    // 3D build controller already updated language
   } else if (appMode === 'game' && puzzleGame.activeSolution) {
     const res = puzzleGame.evaluateLiveField();
     updateGameLevelCopy();
@@ -439,7 +447,11 @@ function renderGuidePage() {
     });
   }
 
-  mountAssemblyManualAnimator(guideView, lang);
+  guideView.querySelectorAll('[data-open-build3d]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      setAppMode('build');
+    });
+  });
 }
 
 // -------------------- Helpers --------------------
@@ -1780,18 +1792,39 @@ async function setAppMode(mode) {
 
   const isStudio = mode === 'studio';
   const isGame = mode === 'game';
+  const isBuild = mode === 'build';
   const isGuide = mode === 'guide';
 
   btnModeStudio.classList.toggle('active', isStudio);
   btnModeStudio.setAttribute('aria-selected', String(isStudio));
   btnModeGame.classList.toggle('active', isGame);
   btnModeGame.setAttribute('aria-selected', String(isGame));
+  if (btnModeBuild) {
+    btnModeBuild.classList.toggle('active', isBuild);
+    btnModeBuild.setAttribute('aria-selected', String(isBuild));
+  }
   btnModeGuide.classList.toggle('active', isGuide);
   btnModeGuide.setAttribute('aria-selected', String(isGuide));
 
-  stageView.classList.toggle('hidden', isGuide);
+  document.body.classList.toggle('build3d-locked', isBuild);
+  stageView.classList.toggle('hidden', isGuide || isBuild);
+  if (buildView) buildView.classList.toggle('hidden', !isBuild);
   guideView.classList.toggle('hidden', !isGuide);
-  labToggleWrap.classList.toggle('hidden', isGuide);
+  labToggleWrap.classList.toggle('hidden', isGuide || isBuild);
+
+  if (isBuild) {
+    if (prevMode === 'studio' || prevMode === 'game') lastInteractiveMode = prevMode;
+    window.scrollTo({ top: 0, behavior: 'instant' });
+    if (!build3dCtrl && buildView) {
+      build3dCtrl = new HowToBuild3DController(buildView, lang, () => {
+        setAppMode(lastInteractiveMode || 'studio');
+      });
+    } else if (build3dCtrl) {
+      build3dCtrl.setLanguage(lang);
+      build3dCtrl.resize();
+    }
+    return;
+  }
 
   if (isGuide) {
     if (prevMode === 'studio' || prevMode === 'game') lastInteractiveMode = prevMode;
@@ -1806,7 +1839,7 @@ async function setAppMode(mode) {
   if (isGame) {
     if (prevMode === 'studio') wasClassicSweepBeforeGame = classicManualSweep;
     stopSequence();
-    if (prevMode === 'guide' && puzzleGame.activeSolution) {
+    if ((prevMode === 'guide' || prevMode === 'build') && puzzleGame.activeSolution) {
       updateGameLevelCopy();
       const res = puzzleGame.evaluateLiveField();
       if (res) applyGameEval(res, { pulse: false });
@@ -1815,7 +1848,7 @@ async function setAppMode(mode) {
     }
   } else if (isStudio) {
     gameAllLocked = false;
-    if (prevMode === 'guide' && currentSolution && currentTargetLabel === studioTargetLabel) {
+    if ((prevMode === 'guide' || prevMode === 'build') && currentSolution && currentTargetLabel === studioTargetLabel) {
       const pCount = currentSolution.actuatorStats.length;
       elStatusText.textContent = classicManualSweep
         ? T().statusClassicMode(Math.round(Number(classicFreqSlider.value)))
@@ -1849,6 +1882,11 @@ btnModeGame.addEventListener('click', () => {
   unlockAudioOnInteraction();
   setAppMode('game');
 });
+if (btnModeBuild) {
+  btnModeBuild.addEventListener('click', () => {
+    setAppMode('build');
+  });
+}
 btnModeGuide.addEventListener('click', () => {
   setAppMode('guide');
 });
@@ -1952,7 +1990,7 @@ function tick(now) {
   const elapsed = Math.max(0, Math.min(0.2, (now - lastTime) / 1000));
   lastTime = now;
 
-  if (appMode !== 'guide') {
+  if (appMode === 'studio' || appMode === 'game') {
     physicsAcc += elapsed;
     let steps = 0;
     while (physicsAcc >= FIXED_DT && steps < 6) {

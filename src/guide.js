@@ -3,8 +3,6 @@
  * Written so both a 10-year-old child and a physics professor understand every button, wave, and formula.
  */
 
-import { renderAssemblyManualHTML } from './assembly-manual.js';
-
 export const HELP_TIPS_TR = {
   mode_studio: {
     title: 'Stüdyo Modu',
@@ -15,6 +13,11 @@ export const HELP_TIPS_TR = {
     title: 'Akustik Şifre Kırıcı (Oyun)',
     body: 'Gizli bir rakam veya kelime frekansların arasına saklanmıştır. Kaydırıcıları yavaşça hareket ettirerek bozuk dalgaları rezonansa kilitle ve kumun içindeki şifreyi çöz.',
     note: 'Her kaydırıcı gerçek Lorentzian rezonans eğrisini ve ses perdesini değiştirir.',
+  },
+  mode_build: {
+    title: 'Nasıl Kurulur? (3B Scroll Montaj Rehberi)',
+    body: 'Tıpkı Event Horizon ve Life of a Photon gibi sayfa kaymadan, fare tekerleğiyle (scroll) adım adım ilerleyen gerçekçi 3B WebGL donanım kurulum simülasyonu. Hangi parçanın nereye, neden ve nasıl takıldığını 3B modeller üzerinde gösterir.',
+    note: 'Sahneyi farenle döndürebilir, yandan göz hizası kesitine geçebilir ve alternatifli tam malzeme listesini açabilirsin.',
   },
   mode_guide: {
     title: 'Nasıl Çalışır? (Herkes İçin Rehber)',
@@ -168,6 +171,11 @@ export const HELP_TIPS_EN = {
     title: 'Acoustic Cipher Game',
     body: 'A secret digit or word is hidden inside detuned frequencies. Slide the frequency channels slowly until they lock into resonance and reveal the hidden shape in the sand.',
     note: 'Each slider sweeps a real Lorentzian resonance curve and live Web Audio pitch.',
+  },
+  mode_build: {
+    title: 'How to Build (3D Scroll Assembly Experience)',
+    body: 'Full-viewport, wheel-driven 3D WebGL hardware assembly walkthrough — just like Event Horizon & Life of a Photon. Scroll to assemble realistic 3D models of the plate, underside piezos, foam pads, 100 Ω resistors, amps, and 7.1 sound card step by step.',
+    note: 'Drag to orbit in 3D, switch to eye-level cross-section, or open the complete parts & alternatives list.',
   },
   mode_guide: {
     title: 'How It Works (Plain-Language Guide)',
@@ -570,14 +578,22 @@ export function renderGuideMarkup(simpleOnly = false, lang = 'tr') {
         </section>
 
         <section class="guide-sec">
-          <span class="guide-step">CHAPTER 04 · REAL-WORLD BUILD &amp; INTERACTIVE ASSEMBLY MANUAL</span>
-          <h2>4. How to Build It on Your Desk from Scratch (IKEA-Style Step-by-Step Manual)</h2>
+          <span class="guide-step">CHAPTER 04 · REAL-WORLD HARDWARE ARCHITECTURE</span>
+          <h2>4. Physical Prototype Architecture &amp; 3D Interactive Assembly</h2>
           <div class="simple-box">
-            <strong>Why No Arduino?</strong> A multi-channel USB sound card (5.1 or 7.1) is already a phase-synchronized 6- or
-            8-channel 48 kHz DAC straight from your PC! And remember: <strong>piezos bond parallel to the UNDERSIDE of the plate</strong>,
-            while the plate rests on <strong>4 soft 2.5 cm foam pads</strong> so the piezos hang in mid-air without touching the desk.
+            <strong>Why No Arduino &amp; How Are the Piezos Mounted?</strong> A multi-channel USB sound card (5.1 or 7.1) is already a
+            phase-synchronized 6- or 8-channel 48 kHz DAC straight from your PC! <strong>The 8 piezo discs bond parallel (face-to-face)
+            to the UNDERSIDE of the aluminum plate</strong> with rigid two-part epoxy, while the plate rests on <strong>4 soft 2.5 cm foam
+            isolation pads</strong> so the piezos hang in a 20 mm air gap without ever touching the desk.
           </div>
-          ${renderAssemblyManualHTML('en')}
+          <p>
+            To explore every component in realistic 3D — including the flipped underside epoxy bonding, the eye-level side cross-section,
+            the 100 Ω series protection resistors, the 4 stereo TPA3116D2 amplifiers, the 7.1 USB sound card wiring, and the complete
+            zero-link parts &amp; alternatives inventory — launch the dedicated <strong>How to Build (3D Scroll Assembly)</strong> experience:
+          </p>
+          <div style="margin-top:6px;">
+            <button type="button" class="btn-solid" data-open-build3d="1">Launch 3D “How to Build” Scroll Experience →</button>
+          </div>
         </section>
 
         <section class="guide-sec">
@@ -758,15 +774,23 @@ export function renderGuideMarkup(simpleOnly = false, lang = 'tr') {
       </section>
 
       <section class="guide-sec">
-        <span class="guide-step">BÖLÜM 04 · GERÇEK HAYAT PROTOTİPİ &amp; İNTERAKTİF KURULUM KATALOĞU</span>
-        <h2>4. Bu Sistem Gerçek Hayatta Sıfırdan Nasıl Kurulur? (Adım Adım Montaj Kataloğu)</h2>
+        <span class="guide-step">BÖLÜM 04 · GERÇEK HAYAT DONANIM MİMARİSİ</span>
+        <h2>4. Fiziksel Prototip Mimarisi &amp; 3B İnteraktif Montaj Simülasyonu</h2>
         <div class="simple-box">
           <strong>Arduino Gerekmez &amp; Piezolar Altta Havada Durur!</strong> Bilgisayara takılan çok jaklı bir USB ses kartı zaten
-          6 veya 8 bağımsız kanalı faz-senkronlu sürer. <strong>Piezolar plakanın ALT YÜZÜNE paralel yapışır</strong>; plaka ise
-          <strong>4 adet 2.5 cm yumuşak sünger takoz</strong> üzerine oturduğu için piezolar masaya hiç değmeden altta havada asılı kalır
-          ve plakayı <strong>aşağı–yukarı (±z)</strong> büker.
+          6 veya 8 bağımsız kanalı faz-senkronlu sürer. <strong>8 adet 35 mm piezo disk, alüminyum plakanın ALT YÜZÜNE paralel
+          (yüz yüze) olarak sert çift bileşenli epoksiyle yapıştırılır</strong>; plaka ise <strong>4 adet 2.5 cm yumuşak sünger takoz</strong>
+          üzerine oturduğu için piezolar masaya hiç değmeden 20 mm hava boşluğunda asılı kalır ve plakayı <strong>aşağı–yukarı (±z)</strong> büker.
         </div>
-        ${renderAssemblyManualHTML('tr')}
+        <p>
+          Plakanın ters çevrilip epoksiyle piezo yapıştırılmasından göz hizası yan kesitine, 100 Ω koruma dirençlerinden 4 adet TPA3116D2
+          amfi ve 7.1 USB ses kartı kablolamasına, alternatifli tam malzeme envanterine kadar tüm kurulumu <strong>sayfa kaymadan fare
+          tekerleğiyle (scroll) ilerleyen gerçekçi 3B WebGL modellerle</strong> incelemek için üst bardaki <strong>Nasıl Kurulur?</strong>
+          modunu açabilirsin:
+        </p>
+        <div style="margin-top:6px;">
+          <button type="button" class="btn-solid" data-open-build3d="1">3B “Nasıl Kurulur?” Scroll Montaj Rehberini Aç →</button>
+        </div>
       </section>
 
       <section class="guide-sec">
