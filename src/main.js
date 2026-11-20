@@ -1814,6 +1814,8 @@ async function setAppMode(mode) {
 
   if (isBuild) {
     if (prevMode === 'studio' || prevMode === 'game') lastInteractiveMode = prevMode;
+    if (labOpen) setLabOpen(false);
+    hideTooltip();
     window.scrollTo({ top: 0, behavior: 'instant' });
     if (!build3dCtrl && buildView) {
       build3dCtrl = new HowToBuild3DController(buildView, lang, () => {
