@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PULSE+ — Sesle Şekillenen Kum</title>
+  <meta name="description" content="Düz metal plaka üzerinde gerçek Kirchhoff–Love ses dalgalarıyla kumdan rakamlar, harfler ve desenler oluşturan etkileşimli akustik fizik simülatörü." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="app-root" id="appRoot">
+    <!-- Minimalist Precision Header -->
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 12h3.5l2.5-7 3.5 14 3-10 2 5 1.5-2H22" />
+          </svg>
+        </div>
+        <span class="brand-name">PULSE<span class="brand-plus">+</span></span>
+      </div>
+
+      <nav class="mode-switch" role="tablist" aria-label="Mode">
+        <button id="btnModeStudio" class="mode-tab active" role="tab" aria-selected="true" data-tip-hover="mode_studio" data-i18n="modeStudio">Stüdyo</button>
+        <button id="btnModeGame" class="mode-tab" role="tab" aria-selected="false" data-tip-hover="mode_game" data-i18n="modeGame">Oyun</button>
+        <button id="btnModeGuide" class="mode-tab" role="tab" aria-selected="false" data-tip-hover="mode_guide" data-i18n="modeGuide">Nasıl Çalışır?</button>
+      </nav>
+
+      <div class="topbar-right">
+        <!-- Bilingual TR / EN Switch -->
+        <div class="lang-switch" id="langSwitch" role="group" aria-label="Language" data-tip-hover="lang_switch">
+          <button type="button" class="lang-btn active" data-lang="tr">TR</button>
+          <button type="button" class="lang-btn" data-lang="en">EN</button>
+        </div>
+
+        <div class="top-action-wrap">
+          <button id="btnAudioToggle" class="top-btn active" title="Sesi aç veya kapat">
+            <svg class="ico" id="icoAudioOn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+              <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+              <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+            </svg>
+            <svg class="ico hidden" id="icoAudioOff" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+              <line x1="23" y1="9" x2="17" y2="15" />
+              <line x1="17" y1="9" x2="23" y2="15" />
+            </svg>
+            <span id="audioLabel">Ses</span>
+          </button>
+          <button type="button" class="info-dot" data-tip="audio_toggle" aria-label="Audio info">?</button>
+        </div>
+
+        <div class="top-action-wrap" id="labToggleWrap">
+          <button id="btnToggleLab" class="top-btn" aria-expanded="false" aria-controls="labDrawer">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="4" y1="21" x2="4" y2="14" /><line x1="4" y1="10" x2="4" y2="3" />
+              <line x1="12" y1="21" x2="12" y2="12" /><line x1="12" y1="8" x2="12" y2="3" />
+              <line x1="20" y1="21" x2="20" y2="16" /><line x1="20" y1="12" x2="20" y2="3" />
+              <line x1="1" y1="14" x2="7" y2="14" /><line x1="9" y1="8" x2="15" y2="8" /><line x1="17" y1="16" x2="23" y2="16" />
+            </svg>
+            <span data-i18n="physicsLab">Fizik Lab</span>
+          </button>
+          <button type="button" class="info-dot" data-tip="physics_lab" aria-label="Physics Lab info">?</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- MAIN INSTRUMENT WORKSTATION (Studio & Game + Non-Blocking Expanding Physics Lab) -->
+    <main class="stage" id="stageView">
+      <!-- Left: Unobstructed Sculptural Acoustic Plate + Zero-Duplication Telemetry Strip -->
+      <section class="plate-column">
+        <div class="plate-bezel" id="canvasStage">
+          <canvas id="plateCanvas" width="600" height="600"></canvas>
+          <div class="solving-pill hidden" id="solvingPill">
+            <span class="spinner"></span>
+            <span data-i18n="computing">Hesaplanıyor</span>
+          </div>
+        </div>
+
+        <!-- Single Authoritative Plate Readout + Sole Live Oscilloscope + Playback -->
+        <div class="plate-bar">
+          <div class="plate-readout" id="activeCharBanner">
+            <span class="status-led" id="simLed"></span>
+            <span class="readout-text"><strong>3</strong> · 16 Piezo · Baskın 1940 Hz</span>
+            <button type="button" class="info-dot" data-tip="plate_readout" aria-label="Readout info">?</button>
+          </div>
+
+          <div class="plate-bar-right">
+            <canvas id="miniScopeCanvas" width="84" height="22" aria-label="Live oscilloscope"></canvas>
+
+            <button id="btnPlayPause" class="icon-btn active" title="Duraklat / Başlat (Boşluk)">
+              <svg class="ico" id="icoPause" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round">
+                <line x1="9" y1="6" x2="9" y2="18" /><line x1="15" y1="6" x2="15" y2="18" />
+              </svg>
+              <svg class="ico hidden" id="icoPlay" viewBox="0 0 24 24" fill="currentColor">
+                <polygon points="7 5 19 12 7 19 7 5" />
+              </svg>
+            </button>
+            <button type="button" class="info-dot" data-tip="play_pause" aria-label="Play pause info">?</button>
+
+            <button id="btnScatter" class="icon-btn" title="Kumu dağıt">
+              <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="23 4 23 10 17 10" />
+                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+              </svg>
+            </button>
+            <button type="button" class="info-dot" data-tip="scatter" aria-label="Scatter sand info">?</button>
+          </div>
+        </div>
+
+        <!-- Single Authoritative Layer Switch + Compact Hz Readout + Live Metrics -->
+        <div class="telemetry-deck" id="liveTelemetryDeck" aria-label="Live Wave Telemetry">
+          <div class="telemetry-head">
+            <div class="telemetry-head-left">
+              <span class="telemetry-title" data-i18n="viewLabel">Görünüm</span>
+              <button type="button" class="info-dot" data-tip="overlay_layer" aria-label="Layer info">?</button>
+              <div class="mini-layer-switch" id="overlayTabs" role="group" aria-label="Plate layer">
+                <button type="button" class="mini-seg active" data-overlay="sand" data-i18n="layerSand">Kum</button>
+                <button type="button" class="mini-seg" data-overlay="heatmap" data-i18n="layerHeatmap">Titreşim</button>
+                <button type="button" class="mini-seg" data-overlay="wave" data-i18n="layerWave">Dalga</button>
+                <button type="button" class="mini-seg" data-overlay="target" data-i18n="layerTarget">Hedef</button>
+              </div>
+            </div>
+            <span class="telemetry-badge" id="liveDomBadge">Baskın — Hz</span>
+          </div>
+
+          <!-- Compact Hz Spectrum Overview -->
+          <div class="compact-spec-row">
+            <div class="compact-spec-head">
+              <div class="label-with-tip">
+                <span class="telemetry-sub" data-i18n="activeFreqsLabel">Aktif Frekanslar (Hz)</span>
+                <button type="button" class="info-dot" data-tip="spectrum_strip" aria-label="Frequency strip info">?</button>
+              </div>
+              <button type="button" class="link-btn" id="btnOpenManualMixer" data-i18n="tuneManually">Manuel Ayarla →</button>
+            </div>
+            <div class="hz-chips" id="compactFreqStrip"></div>
+          </div>
+
+          <!-- Single Authoritative Live Metrics Bar -->
+          <div class="telemetry-foot">
+            <div class="telemetry-pills">
+              <span class="t-pill">
+                <span id="liveStatIouLabel">IoU</span>
+                <strong id="liveStatIou">—</strong>
+                <button type="button" class="info-dot info-dot-xs" data-tip="metric_iou" aria-label="IoU info">?</button>
+              </span>
+              <span class="t-pill">
+                <span id="liveStatContrastLabel">Kontrast</span>
+                <strong id="liveStatContrast">—</strong>
+                <button type="button" class="info-dot info-dot-xs" data-tip="metric_contrast" aria-label="Contrast info">?</button>
+              </span>
+              <span class="t-pill">
+                <span data-i18n="statOverlap">Hedef Kum</span>
+                <strong id="liveStatOverlap">—</strong>
+                <button type="button" class="info-dot info-dot-xs" data-tip="metric_overlap" aria-label="Sand in target info">?</button>
+              </span>
+              <span class="t-pill">
+                <span>λ</span>
+                <strong id="liveStatLambda">—</strong>
+                <button type="button" class="info-dot info-dot-xs" data-tip="metric_lambda" aria-label="Wavelength info">?</button>
+              </span>
+            </div>
+            <p class="physics-story" id="physicsStoryLine">Plaka özmodları ve eşzamanlı dalga girişimi hazırlanıyor...</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Center: Calm Sculpted Interaction Surface (Studio / Draw / Game) -->
+      <section class="control-column">
+        <!-- SURFACE 1: STUDIO -->
+        <div class="surface-card" id="studioCard">
+          <div class="surface-head">
+            <div class="label-with-tip">
+              <h1 class="surface-title" data-i18n="studioTitle">Rakam seç veya yaz</h1>
+              <button type="button" class="info-dot" data-tip="keypad" aria-label="Keypad info">?</button>
+            </div>
+            <p class="surface-sub" id="statusText">Düz metal plaka üstündeki serbest kum, eşzamanlı dalga girişimiyle şekil alır.</p>
+          </div>
+
+          <div class="keypad" id="digitGrid" aria-label="Digits 0-9">
+            <button class="key-btn" data-digit="0">0</button>
+            <button class="key-btn" data-digit="1">1</button>
+            <button class="key-btn" data-digit="2">2</button>
+            <button class="key-btn active" data-digit="3">3</button>
+            <button class="key-btn" data-digit="4">4</button>
+            <button class="key-btn" data-digit="5">5</button>
+            <button class="key-btn" data-digit="6">6</button>
+            <button class="key-btn" data-digit="7">7</button>
+            <button class="key-btn" data-digit="8">8</button>
+            <button class="key-btn" data-digit="9">9</button>
+          </div>
+
+          <div class="input-row-tip">
+            <div class="text-field">
+              <input
+                id="wordInput"
+                type="text"
+                maxlength="500"
+                placeholder="Kelime, harf veya cümle yaz..."
+                data-i18n-placeholder="wordPlaceholder"
+                autocomplete="off"
+                spellcheck="false"
+              />
+              <button id="btnSynthesizeWord" class="send-btn" title="Kumda oluştur">
+                <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                  <polyline points="12 5 19 12 12 19" />
+                </svg>
+              </button>
+            </div>
+            <button type="button" class="info-dot" data-tip="word_input" aria-label="Text input info">?</button>
+          </div>
+
+          <div class="sequence-strip hidden" id="sequenceBar">
+            <button id="btnPrevStep" class="seq-icon-btn" title="Previous">
+              <svg class="ico-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+            </button>
+            <div class="seq-chips" id="seqChips"></div>
+            <span class="seq-counter" id="seqCounter">1/1</span>
+            <button id="btnNextStep" class="seq-icon-btn" title="Next">
+              <svg class="ico-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </button>
+            <button id="btnStopSequence" class="seq-icon-btn" title="Stop">
+              <svg class="ico-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+          </div>
+
+          <div class="secondary-actions">
+            <div class="action-with-tip">
+              <button id="btnDigitTour" class="ghost-action">
+                <svg class="ico-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="5 3 19 12 5 21 5 3" />
+                </svg>
+                <span id="digitTourLabel">0–9 Otomatik</span>
+              </button>
+              <button type="button" class="info-dot" data-tip="digit_tour" aria-label="Auto tour info">?</button>
+            </div>
+
+            <div class="action-with-tip">
+              <button id="btnDrawMode" class="ghost-action">
+                <svg class="ico-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 20h9" />
+                  <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                </svg>
+                <span data-i18n="drawModeBtn">Kendin Çiz</span>
+              </button>
+              <button type="button" class="info-dot" data-tip="draw_mode" aria-label="Draw mode info">?</button>
+            </div>
+          </div>
+
+          <button type="button" class="guide-teaser-btn" id="btnOpenGuideFromStudio">
+            <span data-i18n="guideTeaserText">Ses kumu nasıl rakamlara dönüştürüyor?</span>
+            <strong data-i18n="guideTeaserCta">Rehberi Oku →</strong>
+          </button>
+        </div>
+
+        <!-- SURFACE 2: DRAWING MODE -->
+        <div class="surface-card hidden" id="drawCard">
+          <div class="surface-head">
+            <span class="eyebrow" data-i18n="drawEyebrow">Serbest Çizim</span>
+            <h1 class="surface-title" data-i18n="drawTitle">Plakanın üzerine çiz</h1>
+            <p class="surface-sub" data-i18n="drawSub">Sol taraftaki plakaya fare veya parmağınla istediğin şekli çiz, sonra ses dalgalarına dönüştür.</p>
+          </div>
+          <div class="draw-actions-col">
+            <button id="btnSolveDrawing" class="btn-solid" data-i18n="drawSolveBtn">Kumda Oluştur</button>
+            <div class="draw-actions-row">
+              <button id="btnClearDrawing" class="btn-outline" data-i18n="drawClearBtn">Temizle</button>
+              <button id="btnExitDrawing" class="btn-outline" data-i18n="drawExitBtn">Geri Dön</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- SURFACE 3: ACOUSTIC PUZZLE GAME -->
+        <div class="surface-card hidden" id="gameCard">
+          <div class="game-top">
+            <div>
+              <span class="eyebrow" id="gameLevelBadge">SEVİYE 01 / 08 · GİZLİ RAKAM</span>
+              <h1 class="surface-title" id="gameLevelTitle">İlk Rezonans</h1>
+            </div>
+            <div class="score-tag">
+              <strong id="gameScoreVal">0</strong>
+              <span data-i18n="gameScoreUnit">puan</span>
+            </div>
+          </div>
+
+          <div class="meter-block">
+            <div class="meter-row">
+              <span class="label-with-tip">
+                <span data-i18n="gameMatchLabel">Rezonans Uyumu</span>
+                <button type="button" class="info-dot info-dot-xs" data-tip="game_match" aria-label="Resonance match info">?</button>
+              </span>
+              <span class="mono-val" id="gameMatchPct">0%</span>
+            </div>
+            <div class="meter-track">
+              <div class="meter-fill" id="gameMatchFill" style="width:0%"></div>
+            </div>
+          </div>
+
+          <div class="label-with-tip">
+            <span class="field-label" data-i18n="gameKnobsLabel">Frekans Ayar Kanalları</span>
+            <button type="button" class="info-dot info-dot-xs" data-tip="game_knobs" aria-label="Game sliders info">?</button>
+          </div>
+          <div class="knobs-stack" id="gameKnobs"></div>
+
+          <div class="win-card hidden" id="gameWinBanner">
+            <div class="win-copy">
+              <strong id="gameWinTitle">Kilit açıldı: 0</strong>
+              <p id="gameWinSub">Tüm ses dalgaları rezonansa girdi.</p>
+            </div>
+            <button id="btnNextLevel" class="btn-solid btn-sm">Sonraki</button>
+          </div>
+
+          <div class="game-bottom">
+            <p class="game-hint" id="gameHintText">Ses kanallarını yavaşça kaydırarak gizli şekli ortaya çıkar.</p>
+            <div class="level-dots" id="gameLevelDots"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right: Non-Blocking Expanding Physics Lab Panel (3 Zero-Duplication Tabs) -->
+      <aside class="lab-panel" id="labDrawer" aria-label="Physics Laboratory" aria-hidden="true">
+        <div class="lab-panel-inner">
+          <div class="lab-header">
+            <div>
+              <h2 data-i18n="physicsLabTitle">Fizik Laboratuvarı</h2>
+              <p class="lab-spec" id="headerPlateSpec">Al 6061-T6 · 25×25 cm · 16 Piezo</p>
+            </div>
+            <button id="btnCloseLab" class="icon-btn" title="Daralt (Esc)">
+              <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+                <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+          </div>
+
+          <div class="lab-tabs" role="tablist">
+            <button class="lab-tab active" role="tab" aria-selected="true" data-labtab="spectrum" data-i18n="tabFreqs">Frekanslar</button>
+            <button class="lab-tab" role="tab" aria-selected="false" data-labtab="hardware" data-i18n="tabHardware">Donanım</button>
+            <button class="lab-tab" role="tab" aria-selected="false" data-labtab="thesis" data-i18n="tabThesis">Tez Verisi</button>
+          </div>
+
+          <div class="lab-body">
+            <!-- TAB 1: PER-FREQUENCY MANUAL MIXER -->
+            <div class="lab-pane active" data-labpane="spectrum">
+              <div class="field-group">
+                <div class="slider-head">
+                  <div class="label-with-tip">
+                    <label class="field-label" id="mixerTitle">Manuel Frekans Kontrolü</label>
+                    <button type="button" class="info-dot info-dot-xs" data-tip="manual_mixer" aria-label="Manual mixer info">?</button>
+                  </div>
+                  <button id="btnResetAllFreqs" class="link-btn" data-i18n="resetAllBtn">Tümünü Sıfırla</button>
+                </div>
+                <p class="field-note" id="mixerHintNote">Her kanalın şiddetini (%0–%200) ve gerçek Hz frekansını ayrı ayrı değiştirebilir, ↺ ile tek tek varsayılana döndürebilirsin.</p>
+                <div class="freq-mixer" id="freqMixer"></div>
+              </div>
+            </div>
+
+            <!-- TAB 2: HARDWARE, MATERIAL & PLAYBACK -->
+            <div class="lab-pane" data-labpane="hardware">
+              <div class="field-group">
+                <div class="label-with-tip">
+                  <label class="field-label" data-i18n="hwSectionLabel">Akustik Donanım (Düz Metal Plaka)</label>
+                  <button type="button" class="info-dot info-dot-xs" data-tip="hardware_mode" aria-label="Hardware info">?</button>
+                </div>
+                <div class="seg-4" id="hardwareSegmented">
+                  <button class="seg-btn" data-hw="array8" data-i18n="hw8">8 Piezo</button>
+                  <button class="seg-btn active" data-hw="array16" data-i18n="hw16">16 Piezo</button>
+                  <button class="seg-btn" data-hw="array40" data-i18n="hw40">40 Piezo</button>
+                  <button class="seg-btn" data-hw="classic" data-i18n="hwClassic">1 Hoparlör</button>
+                </div>
+                <p class="field-note" id="hwHint">16 kenar piezo × 8 eşzamanlı frekans — çizgisiz düz plakada %95+ netlik.</p>
+              </div>
+
+              <div class="sub-panel hidden" id="classicControls">
+                <div class="slider-head">
+                  <div class="label-with-tip">
+                    <label for="classicFreqSlider" data-i18n="classicSweepLabel">Tekil Frekans Tarayıcı</label>
+                    <button type="button" class="info-dot info-dot-xs" data-tip="classic_sweep" aria-label="Classic sweep info">?</button>
+                  </div>
+                  <span class="mono-val" id="classicFreqVal">440 Hz</span>
+                </div>
+                <input id="classicFreqSlider" type="range" min="80" max="5200" step="1" value="440" />
+                <div class="chip-grid" id="resonanceChips"></div>
+              </div>
+
+              <div class="field-row-2">
+                <div class="field-group">
+                  <div class="label-with-tip">
+                    <label class="field-label" for="materialSelect" data-i18n="materialLabel">Plaka Malzemesi</label>
+                    <button type="button" class="info-dot info-dot-xs" data-tip="material_select" aria-label="Material info">?</button>
+                  </div>
+                  <select id="materialSelect">
+                    <option value="aluminum" data-mat-opt="aluminum">Alüminyum 6061-T6</option>
+                    <option value="acrylic" data-mat-opt="acrylic">Akrilik / PLA (3D)</option>
+                    <option value="brass" data-mat-opt="brass">Pirinç C260</option>
+                    <option value="steel" data-mat-opt="steel">Paslanmaz Çelik 304</option>
+                  </select>
+                </div>
+                <div class="field-group">
+                  <div class="label-with-tip">
+                    <label class="field-label" for="particleCountSelect" data-i18n="particleLabel">Kum Taneciği</label>
+                    <button type="button" class="info-dot info-dot-xs" data-tip="particle_count" aria-label="Particle count info">?</button>
+                  </div>
+                  <select id="particleCountSelect">
+                    <option value="25000">25.000</option>
+                    <option value="45000" selected>45.000</option>
+                    <option value="65000">65.000</option>
+                    <option value="85000">85.000</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="field-group">
+                <div class="slider-head">
+                  <div class="label-with-tip">
+                    <label for="gammaSlider" data-i18n="gammaLabel">Titreşim İvmesi (Γ = a/g)</label>
+                    <button type="button" class="info-dot info-dot-xs" data-tip="gamma_slider" aria-label="Acceleration info">?</button>
+                  </div>
+                  <span class="mono-val" id="gammaVal">3.2 g</span>
+                </div>
+                <input id="gammaSlider" type="range" min="0.5" max="6.0" step="0.1" value="3.2" />
+              </div>
+
+              <div class="field-group">
+                <div class="slider-head">
+                  <div class="label-with-tip">
+                    <label for="masterVolume" data-i18n="volumeLabel">Ses Seviyesi</label>
+                    <button type="button" class="info-dot info-dot-xs" data-tip="master_volume" aria-label="Volume info">?</button>
+                  </div>
+                  <span class="mono-val" id="volVal">36%</span>
+                </div>
+                <input id="masterVolume" type="range" min="0" max="1" step="0.01" value="0.36" />
+              </div>
+
+              <div class="field-group">
+                <div class="label-with-tip">
+                  <label class="field-label" for="wordModeSelect" data-i18n="wordModeLabel">Çoklu Metin Oynatma</label>
+                  <button type="button" class="info-dot info-dot-xs" data-tip="word_mode" aria-label="Multi-text playback info">?</button>
+                </div>
+                <select id="wordModeSelect">
+                  <option value="auto" selected data-i18n="wordModeAuto">Otomatik</option>
+                  <option value="char" data-i18n="wordModeChar">Harf Harf (En Net)</option>
+                  <option value="word" data-i18n="wordModeWord">Kelime Kelime</option>
+                  <option value="single" data-i18n="wordModeSingle">Tek Plakada</option>
+                </select>
+              </div>
+
+              <div class="field-row-2">
+                <div class="field-group">
+                  <div class="slider-head">
+                    <div class="label-with-tip">
+                      <label for="seqDurationSlider" data-i18n="seqDurationLabel">Geçiş Süresi</label>
+                      <button type="button" class="info-dot info-dot-xs" data-tip="seq_duration" aria-label="Step duration info">?</button>
+                    </div>
+                    <span class="mono-val" id="seqDurationVal">3.4 sn</span>
+                  </div>
+                  <input id="seqDurationSlider" type="range" min="2.0" max="7.0" step="0.2" value="3.4" />
+                </div>
+                <div class="field-group">
+                  <label class="field-label" data-i18n="loopLabel">Sekans Döngüsü</label>
+                  <button id="btnLoopToggle" class="btn-outline btn-full">Döngü: Kapalı</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- TAB 3: THESIS DATA, REAL HARDWARE CHANNELS & BENCHMARK -->
+            <div class="lab-pane" data-labpane="thesis">
+              <div class="field-group">
+                <div class="slider-head">
+                  <div class="label-with-tip">
+                    <span class="field-label" data-i18n="pdeLabel">Kirchhoff–Love Alan Denklemi</span>
+                    <button type="button" class="info-dot info-dot-xs" data-tip="pde_eq" aria-label="PDE info">?</button>
+                  </div>
+                  <span class="eq-meta" id="solveTimeBadge">— ms</span>
+                </div>
+                <div class="eq-card">
+                  <code>ρh ∂²w/∂t² + D∇⁴w + c ∂w/∂t = F(r,t)</code>
+                </div>
+              </div>
+
+              <div class="field-group">
+                <div class="label-with-tip">
+                  <span class="field-label" data-i18n="constantsLabel">Plaka Sabitleri &amp; NASA Leissa Doğrulaması</span>
+                  <button type="button" class="info-dot info-dot-xs" data-tip="constants_strip" aria-label="Constants info">?</button>
+                </div>
+                <div class="constants-row" id="constantsStrip"></div>
+              </div>
+
+              <div class="sub-panel" id="channelDrivePanel">
+                <div class="slider-head">
+                  <div class="label-with-tip">
+                    <span class="field-label" data-i18n="channelDriveLabel">Gerçek Donanım Kanal Sürüşü</span>
+                    <button type="button" class="info-dot info-dot-xs" data-tip="channel_table" aria-label="Channel drive info">?</button>
+                  </div>
+                  <button id="btnExportChannelsCsv" class="link-btn" data-i18n="channelCsvBtn">Kanal CSV</button>
+                </div>
+                <div class="table-wrap" id="channelDriveTable"></div>
+              </div>
+
+              <div class="field-group">
+                <div class="label-with-tip">
+                  <span class="field-label" data-i18n="exportLabel">Tez Verisi İndir</span>
+                  <button type="button" class="info-dot info-dot-xs" data-tip="export_buttons" aria-label="Export info">?</button>
+                </div>
+                <div class="field-row-2">
+                  <button id="btnExportJson" class="btn-outline btn-full" data-i18n="exportJsonBtn">JSON İndir</button>
+                  <button id="btnExportCsv" class="btn-outline btn-full" data-i18n="exportCsvBtn">Spektrum CSV</button>
+                </div>
+              </div>
+
+              <div class="bench-wrap">
+                <div class="action-with-tip">
+                  <button id="btnRunBenchmark" class="btn-solid btn-full" data-i18n="benchRunBtn">0–9 Toplu Tez Testi Çalıştır</button>
+                  <button type="button" class="info-dot" data-tip="benchmark_btn" aria-label="Benchmark info">?</button>
+                </div>
+                <div class="bench-result hidden" id="benchResult"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </main>
+
+    <!-- DEDICATED PLAIN-LANGUAGE + ACADEMIC SCIENCE GUIDE VIEW -->
+    <section class="guide-view hidden" id="guideView" aria-label="How It Works"></section>
+  </div>
+
+  <!-- Shared Viewport-Smart Contextual (?) Info Popover -->
+  <div class="info-popover hidden" id="infoPopover" role="tooltip">
+    <div class="info-pop-title" id="infoPopTitle"></div>
+    <p class="info-pop-body" id="infoPopBody"></p>
+    <p class="info-pop-note hidden" id="infoPopNote"></p>
+  </div>
+
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>
