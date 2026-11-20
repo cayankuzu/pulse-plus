@@ -3,6 +3,8 @@
  * Written so both a 10-year-old child and a physics professor understand every button, wave, and formula.
  */
 
+import { renderAssemblyManualHTML } from './assembly-manual.js';
+
 export const HELP_TIPS_TR = {
   mode_studio: {
     title: 'Stüdyo Modu',
@@ -568,30 +570,14 @@ export function renderGuideMarkup(simpleOnly = false, lang = 'tr') {
         </section>
 
         <section class="guide-sec">
-          <span class="guide-step">CHAPTER 04 · REAL-WORLD BUILD</span>
-          <h2>4. How to Build It on Your Desk (No Arduino Needed!)</h2>
+          <span class="guide-step">CHAPTER 04 · REAL-WORLD BUILD &amp; INTERACTIVE ASSEMBLY MANUAL</span>
+          <h2>4. How to Build It on Your Desk from Scratch (IKEA-Style Step-by-Step Manual)</h2>
           <div class="simple-box">
             <strong>Why No Arduino?</strong> A multi-channel USB sound card (5.1 or 7.1) is already a phase-synchronized 6- or
-            8-channel 48 kHz DAC straight from your PC!
+            8-channel 48 kHz DAC straight from your PC! And remember: <strong>piezos bond parallel to the UNDERSIDE of the plate</strong>,
+            while the plate rests on <strong>4 soft 2.5 cm foam pads</strong> so the piezos hang in mid-air without touching the desk.
           </div>
-          <div class="hw-steps-grid">
-            <div class="hw-step-card">
-              <strong>1. Flat Aluminum Plate</strong>
-              <p>25×25 cm × 1.0–1.5 mm matte-black painted aluminum resting freely on 4 soft silicone/sponge pads.</p>
-            </div>
-            <div class="hw-step-card">
-              <strong>2. 6 or 8 Edge Piezos</strong>
-              <p>35 mm wired piezo discs bonded with thin 2-part epoxy around the underside rim, each protected by a series 100 Ω resistor.</p>
-            </div>
-            <div class="hw-step-card">
-              <strong>3. 5.1 / 7.1 Sound Card + Amps</strong>
-              <p>True multi-jack analog USB card (e.g., CM6206 5.1 or 4-jack 7.1) driving 3–4× 12–24V TPA3116D2 stereo Class-D amps.</p>
-            </div>
-            <div class="hw-step-card">
-              <strong>4. One-Time Calibration</strong>
-              <p>Sweep each real piezo once to measure glue/plate tolerances, then stream PULSE+’s exported <em>Channel CSV</em> phases live.</p>
-            </div>
-          </div>
+          ${renderAssemblyManualHTML('en')}
         </section>
 
         <section class="guide-sec">
@@ -772,30 +758,15 @@ export function renderGuideMarkup(simpleOnly = false, lang = 'tr') {
       </section>
 
       <section class="guide-sec">
-        <span class="guide-step">BÖLÜM 04 · GERÇEK HAYAT PROTOTİPİ</span>
-        <h2>4. Bu Sistem Gerçek Hayatta Nasıl Kurulur?</h2>
+        <span class="guide-step">BÖLÜM 04 · GERÇEK HAYAT PROTOTİPİ &amp; İNTERAKTİF KURULUM KATALOĞU</span>
+        <h2>4. Bu Sistem Gerçek Hayatta Sıfırdan Nasıl Kurulur? (Adım Adım Montaj Kataloğu)</h2>
         <div class="simple-box">
-          <strong>Arduino Gerekmez!</strong> Bilgisayara takılan çok kanallı gerçek bir USB ses kartı zaten 6 veya 8 bağımsız
-          hoparlör çıkışını mikro-saniye hassasiyetle (faz senkronlu) sürebilir.
+          <strong>Arduino Gerekmez &amp; Piezolar Altta Havada Durur!</strong> Bilgisayara takılan çok jaklı bir USB ses kartı zaten
+          6 veya 8 bağımsız kanalı faz-senkronlu sürer. <strong>Piezolar plakanın ALT YÜZÜNE paralel yapışır</strong>; plaka ise
+          <strong>4 adet 2.5 cm yumuşak sünger takoz</strong> üzerine oturduğu için piezolar masaya hiç değmeden altta havada asılı kalır
+          ve plakayı <strong>aşağı–yukarı (±z)</strong> büker.
         </div>
-        <div class="hw-steps-grid">
-          <div class="hw-step-card">
-            <strong>1. Düz Metal Plaka</strong>
-            <p>25×25 cm, 1.0–1.5 mm alüminyum levha; üstü mat siyah boyalı, 4 yumuşak sünger/silikon ayak üzerinde kenarları serbest durur.</p>
-          </div>
-          <div class="hw-step-card">
-            <strong>2. 6 veya 8 Kenar Piezo</strong>
-            <p>35 mm kablolu piezo diskler iki bileşenli epoksiyle alt kenarlara yapıştırılır. Her birine seri 100 Ω koruma direnci eklenir.</p>
-          </div>
-          <div class="hw-step-card">
-            <strong>3. 5.1 / 7.1 Ses Kartı + Amfiler</strong>
-            <p>Gerçek 3–4 jaklı USB ses kartı (ör. CM6206 5.1 veya 7.1 kart) + 3–4 adet 12–24V TPA3116D2 stereo Class-D amfi.</p>
-          </div>
-          <div class="hw-step-card">
-            <strong>4. Tek Seferlik Kalibrasyon</strong>
-            <p>Gerçek metal ve epoksi farkları için her piezoyu bir kez süpürüp gerçek tepki ölçülür; ardından PULSE+’taki <em>Kanal CSV</em> fazlarıyla canlı sürülür.</p>
-          </div>
-        </div>
+        ${renderAssemblyManualHTML('tr')}
       </section>
 
       <section class="guide-sec">

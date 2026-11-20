@@ -13,6 +13,7 @@ import { AcousticSynth } from './audio.js';
 import { buildGlyphMask, tokenizeTextForPlate, paintMaskBrush } from './glyphs.js';
 import { AcousticPuzzleGame, GAME_LEVELS } from './game.js';
 import { getHelpTip, renderGuideMarkup } from './guide.js';
+import { mountAssemblyManualAnimator } from './assembly-manual.js';
 import { TRANSLATIONS } from './i18n.js';
 
 // Core engines
@@ -437,6 +438,8 @@ function renderGuidePage() {
       setAppMode(lastInteractiveMode || 'studio');
     });
   }
+
+  mountAssemblyManualAnimator(guideView, lang);
 }
 
 // -------------------- Helpers --------------------
